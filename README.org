@@ -1,0 +1,58 @@
+* Words Learner
+Word translation game where the user is presented with words in one language and are asked to provide translation in another language. The application reads word pairs from a JSON file, presents a random word to the user, and asks for the translation.
+
+* Prerequisites
+- Cargo.
+  I suggest installing [[https://rustup.rs/][rustup]] and installing stable branch of rust but you can also install plain [[https://doc.rust-lang.org/cargo/getting-started/installation.html][cargo]]
+
+* Quick Start
+1.Clone this repo
+#+begin_src sh
+git clone https://github.com/antonsakhanovych/Words-Learner.git
+#+end_src
+
+2.Create your words.json file in the format:
+#+begin_src json
+[
+    {
+        "from": "Hello",
+        "to": "Merhaba"
+    },
+    {
+        "from": "How are you?",
+        "to": "Nasılsın?"
+    }
+]
+#+end_src
+
+3.Compile
+#+begin_src bash
+cargo build --release
+#+end_src
+
+4.Start the game
+#+begin_src bash
+./target/release/words_learner
+#+end_src
+
+You will see output similar to this:
+#+begin_src text
+Enter words file in json format(words.json):
+
+Word to translate: Hello
+Merhaba
+Word to translate: Hello
+Merhaba
+Word to translate: How are you?
+Nasılsın?
+Word to translate: How are you?
+Nasıl
+
+Correct answer is: Nasılsın?
+You entered: Nasıl
+
+Your score: 3
+#+end_src
+
+* Work in progress
+- [ ] Improve UI
