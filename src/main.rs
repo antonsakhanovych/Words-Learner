@@ -9,7 +9,9 @@ struct Record {
 }
 
 fn get_input(prompt: &str) -> String {
-    println!("{}", prompt);
+    if !prompt.trim().is_empty() {
+        println!("{}", prompt);
+    }
     let mut input = String::new();
     io::stdin()
         .read_line(&mut input)
@@ -24,7 +26,7 @@ fn main() {
     let file_name = get_input("Enter words file in json format(words.json): ");
     let file =
         fs::read_to_string(&file_name.trim()).expect(&format!("Couldn't read from {}", file_name));
-    let words: Vec<Record> = serde_json::from_str(&file).unwrap();
+    let words: Vec<Record> = serde_json::from_str(&file).expect("ERROR: Not valid JSON ");
     let mut rng = rand::thread_rng();
     let mut score: Saturating<u32> = Saturating(0);
 
@@ -33,11 +35,7 @@ fn main() {
         let rand_record = words.get(rand_num).unwrap();
 
         println!("Word to translate: {}", rand_record.from);
-
-        let mut input = String::with_capacity(rand_record.to.len() + 1);
-        io::stdin()
-            .read_line(&mut input)
-            .expect("ERROR: Couldn't read from stdin!");
+        let input = get_input("");
         let input = input.trim();
 
         if input == rand_record.to {
