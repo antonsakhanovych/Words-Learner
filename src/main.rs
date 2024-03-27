@@ -1,50 +1,19 @@
-use rand::Rng;
-use serde::Deserialize;
-use std::{fs, io, num::Saturating};
+mod app;
+mod errors;
+mod tui;
 
-#[derive(Debug, Deserialize)]
-struct Record {
-    from: String,
-    to: String,
-}
+use color_eyre::Result;
 
-fn get_input(prompt: &str) -> String {
-    if !prompt.trim().is_empty() {
-        println!("{}", prompt);
-    }
-    let mut input = String::new();
-    io::stdin()
-        .read_line(&mut input)
-        .expect("ERROR: Couldn't read from stdin!");
-    if input.trim().is_empty() {
-        input.push_str("words.json");
-    }
-    input
-}
+const FILE_PATH: &'static str = "words.json";
 
-fn main() {
-    let file_name = get_input("Enter words file in json format(words.json): ");
-    let file =
-        fs::read_to_string(&file_name.trim()).expect(&format!("Couldn't read from {}", file_name));
-    let words: Vec<Record> = serde_json::from_str(&file).expect("ERROR: Not valid JSON ");
-    let mut rng = rand::thread_rng();
-    let mut score: Saturating<u32> = Saturating(0);
+fn main() -> Result<()> {
+    errors::install_hooks()?;
+    let mut terminal = tui::enable()?;
+    terminal.clear()?;
 
-    loop {
-        let rand_num = rng.gen_range(0..words.len());
-        let rand_record = words.get(rand_num).unwrap();
+    let mut app = app::App::new(FILE_PATH)?;
+    app.run(&mut terminal)?;
 
-        println!("Word to translate: {}", rand_record.from);
-        let input = get_input("");
-        let input = input.trim();
-
-        if input == rand_record.to {
-            score += 1;
-        } else {
-            println!("\nCorrect answer is: {}", rand_record.to);
-            println!("You entered: {}\n", input);
-            break;
-        }
-    }
-    println!("Your score: {}", score);
+    tui::restore()?;
+    Ok(())
 }
