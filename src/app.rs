@@ -3,11 +3,11 @@ use crossterm::event::{self, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use rand::prelude::*;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout},
-    style::{self, Color, Stylize},
+    style::{Color, Stylize},
     text::{Line, Text},
     widgets::{
         block::{Position, Title},
-        Block, BorderType, Borders, Paragraph, Row, Table, Widget,
+        Block, BorderType, Borders, Padding, Paragraph, Row, Table, Widget,
     },
     Frame,
 };
@@ -15,7 +15,7 @@ use serde::Deserialize;
 
 use std::{collections::VecDeque, fs, io, mem};
 
-const GRUVBOX_BG: Color = Color::Rgb(0x21, 0x21, 0x22);
+// const GRUVBOX_BG: Color = Color::Rgb(0x21, 0x21, 0x22);
 const GRUVBOX_FG: Color = Color::Rgb(0xe6, 0xd2, 0xb5);
 const GRUVBOX_RED: Color = Color::Rgb(0xff, 0x2d, 0x21);
 const GRUVBOX_GREEN: Color = Color::Rgb(0x9e, 0xb1, 0x00);
@@ -164,6 +164,22 @@ impl Widget for &App {
             ])
             .split(area);
 
+        let display_layout = layout[0];
+        let display_title = default_title.clone().content(" Words learner ");
+        let display_block = default_block
+            .clone()
+            .fg(GRUVBOX_YELLOW)
+            .title(display_title)
+            .padding(Padding::top(display_layout.height / 3));
+
+        let display_text = Text::from(Line::from(
+            self.curr_word.from.as_str().bold().fg(GRUVBOX_AQUA),
+        ));
+        Paragraph::new(display_text)
+            .centered()
+            .block(display_block)
+            .render(display_layout, buf);
+
         let ratio_title = Title::from(Line::from(vec![
             " ".into(),
             self.correct.to_string().fg(GRUVBOX_GREEN),
@@ -174,25 +190,23 @@ impl Widget for &App {
         .alignment(Alignment::Center)
         .position(Position::Bottom);
 
-        let user_title = default_title.clone().content(" Type your answer ");
-        let user_block = default_block.clone().title(user_title).title(ratio_title);
+        let user_layout = layout[1];
+        let user_title = default_title.clone().content(" Translate ");
+        let user_block = default_block
+            .clone()
+            .title(user_title)
+            .title(ratio_title)
+            .fg(GRUVBOX_BLUE)
+            .padding(Padding::top(user_layout.height / 3));
+
         let user_text = Text::from(Line::from(self.input.as_str().fg(GRUVBOX_YELLOW)));
 
         Paragraph::new(user_text)
             .centered()
             .block(user_block)
-            .render(layout[0], buf);
+            .render(user_layout, buf);
 
-        let display_block = default_block.clone();
-        let display_text = Text::from(Line::from(
-            self.curr_word.from.as_str().bold().fg(GRUVBOX_PURPLE),
-        ));
-        Paragraph::new(display_text)
-            .centered()
-            .block(display_block)
-            .render(layout[1], buf);
-
-        let main_title = default_title.clone().content(" Word learner ");
+        let main_title = default_title.clone().content(" History ");
 
         let main_instructions = Title::from(Line::from(vec![
             " Exit: ".fg(GRUVBOX_PURPLE),
@@ -211,15 +225,20 @@ impl Widget for &App {
             .clone()
             .title(main_title)
             .title(main_instructions)
-            .border_style(style::Style::new().fg(GRUVBOX_GREEN));
+            .fg(GRUVBOX_GREEN);
 
         Table::new(
             self.history.iter().map(|(word, input)| {
-                Row::new(
+                let row = Row::new(
                     [word.from.as_str(), word.to.as_str(), input.as_str()]
                         .iter()
                         .map(|el| Text::from(*el).centered()),
-                )
+                );
+                if word.to == *input {
+                    row.fg(GRUVBOX_GREEN)
+                } else {
+                    row.fg(GRUVBOX_RED)
+                }
             }),
             table_widths,
         )
@@ -230,7 +249,8 @@ impl Widget for &App {
                     .iter()
                     .map(|el| Text::from(*el).centered()),
             )
-            .fg(GRUVBOX_AQUA),
+            .fg(GRUVBOX_PURPLE)
+            .bold(),
         )
         .block(main_block)
         .render(layout[2], buf);
