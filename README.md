@@ -5,6 +5,10 @@ language and are asked to provide translation in another language. The
 application reads word pairs from a JSON file, presents a random word to
 the user, and asks for the translation.
 
+
+https://github.com/antonsakhanovych/words_learner/assets/35010962/7090dd7a-d753-4986-b3d7-b9f9c922d8ab
+
+
 # Prerequisites
 
 -   Cargo. I suggest installing [rustup](https://rustup.rs/) and
